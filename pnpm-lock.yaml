@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@huacnlee/autocorrect':
-    specifier: ^2.10.0
-    version: 2.10.0
+    specifier: ^2.11.1
+    version: 2.11.1
   vue:
     specifier: ^3.4.27
     version: 3.4.27
@@ -275,8 +275,8 @@ packages:
     dev: true
     optional: true
 
-  /@huacnlee/autocorrect@2.10.0:
-    resolution: {integrity: sha512-G/tke8aoZub82Tsuve8dU5lgV6g4Yc/7FBQ8eLAammHpETjaKKFy/Db/AV3/YOSy1388RU4JKhL3+VfR1D2QWw==}
+  /@huacnlee/autocorrect@2.11.1:
+    resolution: {integrity: sha512-dl5rEvGqZf+JdfNHalL9neSOSwduF9cI4XD79PVTqmHIysZY1Zi7CBi3ISEpLMEfostU12yqbDzhSc0wufBFQw==}
     dev: false
 
   /@isaacs/cliui@8.0.2:
