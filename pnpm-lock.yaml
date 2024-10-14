@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@huacnlee/autocorrect':
-        specifier: ^2.10.0
-        version: 2.10.0
+        specifier: ^2.12.0
+        version: 2.12.0
       vue:
         specifier: ^3.4.27
         version: 3.4.27
@@ -201,8 +201,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@huacnlee/autocorrect@2.10.0':
-    resolution: {integrity: sha512-G/tke8aoZub82Tsuve8dU5lgV6g4Yc/7FBQ8eLAammHpETjaKKFy/Db/AV3/YOSy1388RU4JKhL3+VfR1D2QWw==}
+  '@huacnlee/autocorrect@2.12.0':
+    resolution: {integrity: sha512-n6rKmmIe5gq/xg0vI8qWsB1Vki+fzAZohjVj+70UYn6bO+48FJPDiFnUt22vRpxQWVI5m+xQlOZRoWW3dSk61g==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -1033,7 +1033,7 @@ snapshots:
   '@esbuild/win32-x64@0.20.2':
     optional: true
 
-  '@huacnlee/autocorrect@2.10.0': {}
+  '@huacnlee/autocorrect@2.12.0': {}
 
   '@isaacs/cliui@8.0.2':
     dependencies:
