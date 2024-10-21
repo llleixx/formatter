@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@huacnlee/autocorrect": "^2.10.0",
+    "@huacnlee/autocorrect": "^2.13.0",
     "vue": "^3.4.27"
   },
   "devDependencies": {
