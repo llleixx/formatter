@@ -9,7 +9,10 @@ async function paste(page, text) {
   await page.getByRole('textbox').evaluate((element, text) => {
     const clipboardData = new DataTransfer()
     clipboardData.setData('text/plain', text)
-    element.dispatchEvent(new ClipboardEvent('paste', { clipboardData, bubbles: true, cancelable: true }))
+    // Provide clipboard data explicitly: Firefox sanitizes synthetic ClipboardEvents.
+    const event = new Event('paste', { bubbles: true, cancelable: true })
+    Object.defineProperty(event, 'clipboardData', { value: clipboardData })
+    element.dispatchEvent(event)
   }, text)
 }
 
