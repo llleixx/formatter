@@ -1,58 +1,74 @@
 <script setup>
 import { darkModeConfig } from './dark'
 import fileTypes from './fileTypes'
-import { ref } from 'vue'
+import { nextTick, onUnmounted, ref, shallowRef } from 'vue'
 import config from './config'
 
-const autocorrectLib = import('@huacnlee/autocorrect');
+const autocorrect = shallowRef(null)
+let tooltipTimer
 
 const fileType = ref('markdown')
-const textEditRef = ref(null);
+const textEditRef = ref(null)
 
 const content = ref('')
 const loading = ref(true)
 const visible = ref(false)
+const error = ref('')
 
-autocorrectLib.then((ac) => {
-  ac.loadConfig(JSON.stringify(config))
-  window.autocorrect = ac
-  loading.value = false
-})
+async function loadFormatter() {
+  loading.value = true
+  error.value = ''
+  try {
+    const ac = await import('@huacnlee/autocorrect')
+    ac.loadConfig(JSON.stringify(config))
+    autocorrect.value = ac
+  } catch {
+    error.value = 'Unable to load the formatter. Please reload the page to try again.'
+  } finally {
+    loading.value = false
+  }
+}
+
+loadFormatter()
+onUnmounted(() => clearTimeout(tooltipTimer))
 
 function showToolTip() {
-    visible.value = true;
-    setTimeout(() => {
-      visible.value = false;
-    }, 800);
+  visible.value = true
+  clearTimeout(tooltipTimer)
+  tooltipTimer = setTimeout(() => {
+    visible.value = false
+  }, 800)
 }
 
 function onFormat() {
-  const autocorrect = window.autocorrect
-
-  if (!autocorrect) {
+  if (!autocorrect.value) {
     return
   }
 
-  const res = autocorrect.formatFor(content.value, fileType.value)
-
-  content.value = res.out
-  showToolTip()
+  error.value = ''
+  visible.value = false
+  try {
+    const res = autocorrect.value.formatFor(content.value, fileType.value)
+    if (res.error) throw new Error(res.error)
+    content.value = res.out
+    showToolTip()
+  } catch {
+    error.value = 'Unable to format this text. Your input has been preserved.'
+  }
 }
 
-function onPaste(e) {
+async function onPaste(e) {
+  if (!e.clipboardData) return
   e.preventDefault()
-  let textEdit = textEditRef.value;
-  let clipboardData = e.clipboardData || window.Clipboard
-  let pastedData = clipboardData.getData('Text')
-  let startPos = textEdit.selectionStart
-  let endPos = textEdit.selectionEnd
-  let textValue = textEdit.value
-
-  textEdit.value = textValue.substring(0, startPos) + pastedData + textValue.substring(endPos)
-  textEdit.selectionStart = textEdit.selectionEnd = startPos + pastedData.length
-
-  textEdit.dispatchEvent(new Event('input'))
+  const textEdit = textEditRef.value
+  const pastedData = e.clipboardData.getData('text/plain').replace(/\r\n?/g, '\n')
+  const startPos = textEdit.selectionStart
+  const endPos = textEdit.selectionEnd
+  content.value = content.value.substring(0, startPos) + pastedData + content.value.substring(endPos)
   onFormat()
+  await nextTick()
+  const cursor = Math.min(startPos + pastedData.length, content.value.length)
+  textEdit.setSelectionRange(cursor, cursor)
 }
 
 darkModeConfig.resolveDarkMode(true)
@@ -78,7 +94,7 @@ darkModeConfig.resolveDarkMode(true)
       class="sticky inset-x-0 top-0 mb-8 px-3 py-6 flex justify-between border-b-1 border-b-gray-400 shadow-md bg-white dark:bg-slate-700 lg:px-16 z-50">
       <div class="font-bold">Formatter</div>
       <div class="flex flex-row items-center space-x-4">
-        <button type="button" @click="darkModeConfig.changeMode" class="flex items-center justify-center">
+        <button type="button" aria-label="Toggle dark mode" @click="darkModeConfig.changeMode()" class="flex items-center justify-center">
           <svg class="w-5 h-5 fill-transparent stroke-black stroke-2 dark:stroke-white dark:fill-white">
             <use xlink:href="#icon-moon-fill"></use>
           </svg>
@@ -95,8 +111,8 @@ darkModeConfig.resolveDarkMode(true)
     <main class="px-3 lg:px-16 flex-1 flex flex-col">
       <div class="flex flex-row justify-between items-center mb-6">
         <select class="rounded-lg h-12 border border-gray-300 shadow-md dark:bg-slate-700 dark:border-slate-800"
-          v-model="fileType">
-          <option v-for="(val, key) in fileTypes" :value="key">{{ val.title }}</option>
+          aria-label="File type" v-model="fileType">
+          <option v-for="(val, key) in fileTypes" :key="key" :value="key">{{ val.title }}</option>
         </select>
         <div class="flex flex-row items-center">
           <Transition name="fade">
@@ -105,15 +121,16 @@ darkModeConfig.resolveDarkMode(true)
               Format successfully!
             </div>
           </Transition>
-          <button type="button" :disabled="loading"
+          <button type="button" :disabled="loading || !autocorrect"
             class="mr-4 border border-gray-300 shadow-md h-12 px-5 rounded-lg transition dark:bg-slate-700
             dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 active:translate-x-0.5
             active:translate-y-0.5"
             @click="onFormat">format</button>
         </div>
       </div>
+      <p v-if="error" role="alert" class="mb-4 text-red-600 dark:text-red-400">{{ error }}</p>
       <div class="flex flex-1 mb-6 min-h-36">
-        <textarea ref="textEditRef" spellcheck="false" class="w-full dark:bg-slate-700 rounded-lg min-h-full resize-none flex-1"
+        <textarea ref="textEditRef" aria-label="Text to format" spellcheck="false" class="w-full dark:bg-slate-700 rounded-lg min-h-full resize-none flex-1"
           v-model="content" @paste="onPaste"></textarea>
       </div>
     </main>
